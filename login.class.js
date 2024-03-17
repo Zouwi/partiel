@@ -1,5 +1,4 @@
-class login {
-    constructor(){
+
         document.getElementById('login-form').addEventListener('submit', function(event) {
             event.preventDefault();
             
@@ -31,5 +30,3 @@ class login {
                 console.error('Error:', error);
             });
         });
-    }
-}

@@ -1,6 +1,6 @@
 import Config from "./config.class.js";
 
-class Server {
+class Server2 {
     constructor(port) {
         this.config = new Config();
         this.port = port;
@@ -47,50 +47,28 @@ class Server {
             }
         });
         
-        this.config.app.post('/protected', async (req, res) => {
+        this.config.app.post('/protected2', async (req, res) => {
             const authHeader = req.headers.authorization;
+            console.log('authHeader', authHeader);
             if (!authHeader || !authHeader.startsWith('Bearer ')) {
-                return res.status(401).json({ error: 'Unauthorized' });
+                return res.status(401).json({ error: 'Unauthorized2' });
             }
         
-            //decoupage du token
             const token = authHeader.split(' ')[1];
             try {
                 // Verify and decode JWT token here
                 // Example:
-                // const decodedToken = await jose.JWT.verify(token, secret);
-                // If verification fails, return res.status(401).json({ error: 'Unauthorized' });
+                const decodedToken = await jose.jwtDecrypt(token, jose.base64url.decode('zH4NRP1HMALxxCFnRZABFA7GOJtzU_gIj02alfL1lvI'));
+                console.log(decodedToken);
                 res.json({ message: 'Protected route accessed successfully!' });
             } catch (error) {
                 console.error(error);
-                res.status(401).json({ error: 'Unauthorized' });
+                res.status(402).json({ error: 'Unauthorized' });
             }
         });
-
-        // Fonction pour creer un JWT
-        async function createJWT() {
-          try {
-              const secret = config.jose.base64url.decode('zH4NRP1HMALxxCFnRZABFA7GOJtzU_gIj02alfL1lvI');
-              const jwtToken = await new jose.EncryptJWT({ 'urn:example:claim': true })
-                  .setProtectedHeader({ alg: 'dir', enc: 'A128CBC-HS256' })
-                  .setIssuedAt()
-                  .setIssuer('urn:example:issuer')
-                  .setAudience('urn:example:audience')
-                  .setExpirationTime('4s')
-                  .encrypt(secret);
-              return jwtToken;
-          } catch (error) {
-              throw error;
-          }
-      }
-      
-      function ensureAuthenticated(req, res, next) {
-          if (req.isAuthenticated()) { return next(); }
-          res.redirect('/login')
-        }
     }
 }
 
-export default Server;
+export default Server2;
 
 
