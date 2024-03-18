@@ -3,21 +3,25 @@
             event.preventDefault();
             
             /*VALEURS */
-            const username = document.getElementById('username').value;
+            const login = document.getElementById('username').value;
             const password = document.getElementById('password').value;
+
+                //create a JSON with login and password*
+                const data = { "login": login, "password" : password };
         
             /*ENVOI DU JWT */
             fetch('http://localhost:3000/login', { // replace with your server URL
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${localStorage.getItem('jwt')}`,
+                    
                 },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify(data)                
             })
             .then(response => response.json())
             .then(data => {
-                console.log();
-                if (data.token) {
+                if (data && data.token) {
                     /* STOCKAGE DU JTW DANS LOCALSTORAGE*/
                     localStorage.setItem('jwt', data.token);
                     console.log('Login successful');
@@ -30,3 +34,4 @@
                 console.error('Error:', error);
             });
         });
+    

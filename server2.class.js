@@ -1,43 +1,53 @@
-import Config from "./config.class.js";
+import express from 'express';
+import cors from 'cors';
+import passport from 'passport';
+import session from 'express-session';
+import * as jose from 'jose';
 
 class Server2 {
     constructor(port) {
-        this.config = new Config();
         this.port = port;
 
+        this.express = express;
+        this.app = this.express();
+        this.cors = cors;
+        this.passport = passport;
+        this.session = session;
+        this.jose = jose;
+
         // Middleware pour parse JSON bodies
-        this.config.app.use(this.config.express.json());
+        this.app.use(this.express.json());
 
         //allow cors
-        this.config.app.use(this.config.cors())
+        this.app.use(this.cors())
 
         // Use session middleware
-        this.config.app.use(this.config.session({ secret: 'this is a secret', resave: false, saveUninitialized: false }));
+        this.app.use(this.session({ secret: 'this is a secret', resave: false, saveUninitialized: false }));
           
-        this.config.app.listen(this.port, () => {
+        this.app.listen(this.port, () => {
             console.log(`Server is running on port ${this.port}`);
           });
 
           // Initialize Passport and restore authentication state, if any, from the session.
-          this.config.app.use(this.config.passport.initialize());
-          this.config.app.use(this.config.passport.session());
+          this.app.use(this.passport.initialize());
+          this.app.use(this.passport.session());
 
-          this.config.passport.serializeUser(function(user, done) {
+          this.passport.serializeUser(function(user, done) {
             done(null, user.id);
           });
 
-          this.config.passport.deserializeUser(function(id, done) {
+          this.passport.deserializeUser(function(id, done) {
             User.findById(id, function(err, user) {
               done(err, user);
             });
           });
 
           // Definir les routes
-          this.config.app.get('/', (req, res) => {
+          this.app.get('/', (req, res) => {
             res.send('Hello, world!');
           });
 
-          this.config.app.post('/login', async (req, res) => {
+          this.app.post('/login', async (req, res) => {
             try {
                 const jwtToken = await createJWT();
                 res.json({ token: jwtToken });
@@ -47,7 +57,7 @@ class Server2 {
             }
         });
         
-        this.config.app.post('/protected2', async (req, res) => {
+        this.app.use('/protected2', async (req, res) => {
             const authHeader = req.headers.authorization;
             console.log('authHeader', authHeader);
             if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -58,7 +68,7 @@ class Server2 {
             try {
                 // Verify and decode JWT token here
                 // Example:
-                const decodedToken = await jose.jwtDecrypt(token, jose.base64url.decode('zH4NRP1HMALxxCFnRZABFA7GOJtzU_gIj02alfL1lvI'));
+                const decodedToken = await this.jose.jwtDecrypt(token, this.jose.base64url.decode('zH4NRP1HMALxxCFnRZABFA7GOJtzU_gIj02alfL1lvI'));
                 console.log(decodedToken);
                 res.json({ message: 'Protected route accessed successfully!' });
             } catch (error) {
